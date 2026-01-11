@@ -26,7 +26,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Мои финансы')),
+      appBar: AppBar(title: const Text('Мои финансы'), centerTitle: true,),
       body: const Padding(
         padding: const EdgeInsets.all(AppConstants.spacing),
         child: Column(

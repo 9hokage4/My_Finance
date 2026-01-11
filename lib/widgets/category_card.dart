@@ -30,6 +30,10 @@ class CategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final progressSize = AppConstants.getProgressSize(context);
+    final textSize = AppConstants.getProgressSize(context);
+    final titleSize = AppConstants.getCategoryTitleSize(context);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppConstants.spacing),
@@ -49,28 +53,34 @@ class CategoryCard extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: titleSize, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              CircularProgressIndicator(
-                value: progress,
-                strokeWidth: 12,
-                valueColor: AlwaysStoppedAnimation<Color>(progressColor),
-                backgroundColor: Colors.grey.shade200,
-              ),
-              Text(
-                '${(progress * 100).toInt()}',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: progressColor,
+
+          SizedBox(
+            height: progressSize,
+            width: progressSize,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                CircularProgressIndicator(
+                  value: progress,
+                  strokeWidth: 12,
+                  valueColor: AlwaysStoppedAnimation<Color>(progressColor),
+                  backgroundColor: Colors.grey.shade200,
                 ),
-              ),
-            ],
+                Text(
+                  '${(progress * 100).toInt()}',
+                  style: TextStyle(
+                    fontSize: textSize,
+                    fontWeight: FontWeight.bold,
+                    color: progressColor,
+                  ),
+                ),
+              ],
+            ),
           ),
+
           const SizedBox(height: 16),
           Text(
             'Потрачено: ${spent.toInt()} из ${limit.toInt()}',
