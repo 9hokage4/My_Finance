@@ -1,6 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:my_finance/utils/app_constants.dart';
 
 class CategoryCard extends StatelessWidget {
   final String title;
@@ -10,81 +8,73 @@ class CategoryCard extends StatelessWidget {
   const CategoryCard({
     super.key,
     required this.title,
-    required this.limit,
     required this.spent,
+    required this.limit,
   });
 
   double get progress => limit > 0 ? (spent / limit).clamp(0.0, 1.0) : 0.0;
 
   Color get progressColor {
-    final progress = this.progress;
-
-    if (progress <= 0.5) {
-      double t = progress / 0.5;
-      return Color.lerp(Colors.green, Colors.yellow, t.clamp(0.0, 1.0))!;
+    final p = progress;
+    if (p <= 0.5) {
+      return Color.lerp(Colors.green, Colors.yellow, (p / 0.5).clamp(0.0, 1.0))!;
     } else {
-      double t = (progress - 0.5) / 0.5;
-      return Color.lerp(Colors.yellow, Colors.red, t.clamp(0.0, 1.0))!;
+      return Color.lerp(Colors.yellow, Colors.red, ((p - 0.5) / 0.5).clamp(0.0, 1.0))!;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final progressSize = AppConstants.getProgressSize(context);
-    final textSize = AppConstants.getProgressSize(context);
-    final titleSize = AppConstants.getCategoryTitleSize(context);
+    final width = MediaQuery.sizeOf(context).width;
+
+    // Адаптивные размеры
+    final titleSize = (width * 0.06).clamp(18.0, 24.0);
+    final infoTextSize = (width * 0.045).clamp(14.0, 18.0);
+    final progressBarHeight = (width * 0.05).clamp(8.0, 16.0); // 5% ширины -> высота бара
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppConstants.spacing),
+      padding: EdgeInsets.all(width * 0.04),
+      margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(AppConstants.cardRadius),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey,
+            color: Colors.grey.withOpacity(0.1),
             blurRadius: 8,
-            offset: const Offset(0, 4),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
+          // Название категории
           Text(
             title,
-            style: TextStyle(fontSize: titleSize, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-
-          SizedBox(
-            height: progressSize,
-            width: progressSize,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                CircularProgressIndicator(
-                  value: progress,
-                  strokeWidth: 12,
-                  valueColor: AlwaysStoppedAnimation<Color>(progressColor),
-                  backgroundColor: Colors.grey.shade200,
-                ),
-                Text(
-                  '${(progress * 100).toInt()}',
-                  style: TextStyle(
-                    fontSize: textSize,
-                    fontWeight: FontWeight.bold,
-                    color: progressColor,
-                  ),
-                ),
-              ],
+            style: TextStyle(
+              fontSize: titleSize,
+              fontWeight: FontWeight.bold,
             ),
+            textAlign: TextAlign.center,
           ),
+          const SizedBox(height: 10),
 
-          const SizedBox(height: 16),
+          // Текст "Потрачено: X из Y"
           Text(
             'Потрачено: ${spent.toInt()} из ${limit.toInt()}',
-            style: const TextStyle(fontSize: 16),
+            style: TextStyle(fontSize: infoTextSize, color: Colors.grey),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 12),
+
+          // Линейный прогресс-бар
+          LinearProgressIndicator(
+            value: progress,
+            minHeight: progressBarHeight,
+            color: progressColor,
+            backgroundColor: Colors.grey.shade200,
           ),
         ],
       ),

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_finance/widgets/category_card.dart';
 
-import 'utils/app_constants.dart';
-
 void main() {
   runApp(const FinanceApp());
 }
@@ -26,17 +24,19 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Мои финансы'), centerTitle: true,),
-      body: const Padding(
-        padding: const EdgeInsets.all(AppConstants.spacing),
-        child: Column(
-          children: [
-            CategoryCard(title: 'Могу', limit: 50000, spent: 25000),
-            const SizedBox(height: AppConstants.spacing),
-            CategoryCard(title: 'Хочу', limit: 30000, spent: 25000),
-            const SizedBox(height: AppConstants.spacing),
-            CategoryCard(title: 'Надо', limit: 20000, spent: 5000),
-          ],
+      appBar: AppBar(title: const Text('Мои финансы'), centerTitle: true),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              CategoryCard(title: 'Могу', limit: 50000, spent: 25000),
+              const SizedBox(height: 16),
+              CategoryCard(title: 'Хочу', limit: 30000, spent: 25000),
+              const SizedBox(height: 16),
+              CategoryCard(title: 'Надо', limit: 20000, spent: 5000),
+            ],
+          ),
         ),
       ),
     );
