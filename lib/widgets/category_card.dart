@@ -1,36 +1,29 @@
 import 'package:flutter/material.dart';
+import '../utils/number_formater.dart';
+
 
 class CategoryCard extends StatelessWidget {
-  final String title;
+  final String category;
   final double spent;
   final double limit;
 
   const CategoryCard({
     super.key,
-    required this.title,
+    required this.category,
     required this.spent,
     required this.limit,
   });
-
-  double get progress => limit > 0 ? (spent / limit).clamp(0.0, 1.0) : 0.0;
-
-  Color get progressColor {
-    final p = progress;
-    if (p <= 0.5) {
-      return Color.lerp(Colors.green, Colors.yellow, (p / 0.5).clamp(0.0, 1.0))!;
-    } else {
-      return Color.lerp(Colors.yellow, Colors.red, ((p - 0.5) / 0.5).clamp(0.0, 1.0))!;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
 
-    // Адаптивные размеры
-    final titleSize = (width * 0.06).clamp(18.0, 24.0);
-    final infoTextSize = (width * 0.045).clamp(14.0, 18.0);
-    final progressBarHeight = (width * 0.05).clamp(8.0, 16.0); // 5% ширины -> высота бара
+    final titleSize = (width * 0.072).clamp(16.0, 18.0);
+    final needSize = (width * 0.085).clamp(26.0, 36.0);
+    final spentSize = (width * 0.055).clamp(18.0, 24.0);
+    final progressBarHeight = (width * 0.07).clamp(14.0, 24.0);
+
+    final progress = limit > 0 ? (spent / limit).clamp(0.0, 1.0) : 0.0;
 
     return Container(
       width: double.infinity,
@@ -38,43 +31,94 @@ class CategoryCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.grey.withOpacity(0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
           ),
         ],
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Название категории
+          // Заголовок категории
           Text(
-            title,
-            style: TextStyle(
-              fontSize: titleSize,
-              fontWeight: FontWeight.bold,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 10),
-
-          // Текст "Потрачено: X из Y"
-          Text(
-            'Потрачено: ${spent.toInt()} из ${limit.toInt()}',
-            style: TextStyle(fontSize: infoTextSize, color: Colors.grey),
-            textAlign: TextAlign.center,
+            category,
+            style: TextStyle(fontSize: titleSize, color: Colors.grey[600]),
           ),
           const SizedBox(height: 12),
 
-          // Линейный прогресс-бар
-          LinearProgressIndicator(
-            value: progress,
-            minHeight: progressBarHeight,
-            color: progressColor,
-            backgroundColor: Colors.grey.shade200,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                formatNumber(limit),
+                style: TextStyle(
+                  fontSize: needSize,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              Text(
+                formatNumber(spent),
+                style: TextStyle(
+                  fontSize: spentSize,
+                  color: Colors.grey[700],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          // Прогресс-бар с закруглёнными краями
+          _CustomReverseProgressBar(
+            progress: progress,
+            height: progressBarHeight,
+            borderRadius: 16, // скругление
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CustomReverseProgressBar extends StatelessWidget {
+  final double progress;
+  final double height;
+  final double borderRadius;
+
+  const _CustomReverseProgressBar({
+    required this.progress,
+    required this.height,
+    required this.borderRadius,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(borderRadius),
+      child: Stack(
+        children: [
+          Container(height: height, color: Colors.red.shade400),
+
+          Align(
+            alignment: Alignment.centerRight,
+            child: FractionallySizedBox(
+              widthFactor: progress,
+              child: Container(
+                height: height,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.red.shade400, Colors.green.shade500],
+                    stops: [0.0, 1.0],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),

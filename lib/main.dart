@@ -37,7 +37,7 @@ class HomePage extends StatelessWidget {
         builder: (context, constraints) {
           return Stack(
             children: [
-              // Основной контент (прокручиваемый)
+              // Основной контент
               SingleChildScrollView(
                 padding: const EdgeInsets.all(16.0),
                 child: ConstrainedBox(
@@ -45,11 +45,11 @@ class HomePage extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      CategoryCard(title: 'Могу', spent: 25000, limit: 50000),
+                      CategoryCard(category: 'Обязательные', spent: 25000, limit: 50000),
                       const SizedBox(height: 16),
-                      CategoryCard(title: 'Хочу', spent: 18000, limit: 30000),
+                      CategoryCard(category: 'Развлечения', spent: 18000, limit: 30000),
                       const SizedBox(height: 16),
-                      CategoryCard(title: 'Надо', spent: 5000, limit: 20000),
+                      CategoryCard(category: 'Накопления', spent: 5000, limit: 20000),
                       const SizedBox(height: 100), // дополнительный отступ снизу
                     ],
                   ),
@@ -57,13 +57,13 @@ class HomePage extends StatelessWidget {
               ),
 
               // Кнопки
+              // Кнопки в правом нижнем углу — ГОРИЗОНТАЛЬНО
               Positioned(
-                right: 16,
-                bottom: 16 + MediaQuery.viewPaddingOf(context).bottom,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
+                right: spacing,
+                bottom: spacing + MediaQuery.viewPaddingOf(context).bottom,
+                child: Row(
                   children: [
-                    // Доход
+                    // Кнопка "Доход" (слева)
                     GestureDetector(
                       onTap: () async {
                         final result = await showDialog(
@@ -75,11 +75,11 @@ class HomePage extends StatelessWidget {
                         }
                       },
                       child: Container(
-                        width: (MediaQuery.sizeOf(context).width * 0.15).clamp(50.0, 70.0),
-                        height: (MediaQuery.sizeOf(context).width * 0.15).clamp(50.0, 70.0),
+                        width: buttonSize,
+                        height: buttonSize,
                         decoration: BoxDecoration(
                           color: Colors.green[600],
-                          borderRadius: BorderRadius.circular(16),
+                          shape: BoxShape.circle, // ← КРУГЛАЯ форма
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withOpacity(0.2),
@@ -88,11 +88,12 @@ class HomePage extends StatelessWidget {
                             ),
                           ],
                         ),
-                        child: const Icon(Icons.add, color: Colors.white, size: 30),
+                        child: const Icon(Icons.attach_money, color: Colors.white, size: 30),
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    // Расход
+                    const SizedBox(width: 12),
+
+                    // Кнопка "Расход" (справа)
                     GestureDetector(
                       onTap: () async {
                         final result = await showDialog(
@@ -104,11 +105,11 @@ class HomePage extends StatelessWidget {
                         }
                       },
                       child: Container(
-                        width: (MediaQuery.sizeOf(context).width * 0.15).clamp(50.0, 70.0),
-                        height: (MediaQuery.sizeOf(context).width * 0.15).clamp(50.0, 70.0),
+                        width: buttonSize,
+                        height: buttonSize,
                         decoration: BoxDecoration(
-                          color: Colors.orange[900],
-                          borderRadius: BorderRadius.circular(16),
+                          color: Colors.orange[800],
+                          shape: BoxShape.circle, // ← КРУГЛАЯ форма
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withOpacity(0.2),
@@ -117,7 +118,7 @@ class HomePage extends StatelessWidget {
                             ),
                           ],
                         ),
-                        child: const Icon(Icons.remove, color: Colors.white, size: 30),
+                        child: const Icon(Icons.money_off, color: Colors.white, size: 30),
                       ),
                     ),
                   ],
