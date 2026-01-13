@@ -454,7 +454,7 @@ class FinanceApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Finance Tracker',
-      theme: ThemeData(useMaterial3: true),
+      theme: ThemeData(useMaterial3: true, fontFamily: 'Starfall VAG Rounded'),
       home: MainScreen(),
     );
   }
