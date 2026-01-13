@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_finance/database/app_database.dart';
 
 class TransactionDialog extends StatefulWidget {
   final bool isIncome;
@@ -13,153 +14,116 @@ class _TransactionDialogState extends State<TransactionDialog> {
   final _amountController = TextEditingController();
   final _descriptionController = TextEditingController();
 
-  FocusNode _descriptionFocusNode = FocusNode();
-
   @override
   void dispose() {
     _amountController.dispose();
     _descriptionController.dispose();
-    _descriptionFocusNode.dispose();
     super.dispose();
   }
 
-  void _onSubmit(BuildContext context) {
+  void _onSubmit(BuildContext context) async {
     final amountText = _amountController.text.trim();
     final description = _descriptionController.text.trim();
 
     if (amountText.isEmpty || description.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Заполните все поля'),
-          backgroundColor: Colors.grey[800],
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-        ),
+        const SnackBar(content: Text('Заполните все поля')),
       );
       return;
     }
 
-    final amount = double.tryParse(amountText.replaceAll(' ', '').replaceAll(',', '.'));
+    final amount = double.tryParse(amountText);
     if (amount == null || amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Сумма должна быть больше 0'),
-          backgroundColor: Colors.grey[800],
-          behavior: SnackBarBehavior.floating,
-        ),
+        const SnackBar(content: Text('Введите корректную сумму')),
       );
       return;
     }
 
-    Navigator.of(context).pop({'amount': amount, 'description': description});
+    final db = AppDatabase();
+    final now = DateTime.now().millisecondsSinceEpoch;
+
+    if (widget.isIncome) {
+      // Доход — без категории
+      await db.insertIncome(Income(
+        amount: amount,
+        source: description,
+        date: now,
+      ));
+    } else {
+      // Сохраняем оригинальное описание (как ввёл пользователь)
+      final originalDescription = description;
+      // Нормализуем для определения категории
+      final normalizedDescription = originalDescription.toLowerCase();
+      final category = getCategoryFromDescription(normalizedDescription);
+
+      await db.insertExpense(Expense(
+        amount: amount,
+        description: originalDescription, //  сохраняем оригинал!
+        category: category,
+        date: now,
+      ));
+    }
+
+    // Закрываем диалог и обновляем UI (пока просто закрываем)
+    Navigator.of(context).pop();
+
+    // Показываем подтверждение
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(widget.isIncome ? 'Доход добавлен' : 'Расход добавлен'),
+        backgroundColor: widget.isIncome ? Colors.green : Colors.orange,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final title = widget.isIncome ? 'Новый доход' : 'Новый расход';
-    final descriptionHint = widget.isIncome ? 'Источник (зарплата, подарок...)' : 'Описание (продукты, кино...)';
-    final detailedHint = widget.isIncome
-        ? 'Укажите источник дохода'
-        : 'Например: аптека, билет в кино, цветы';
+    final hint = widget.isIncome ? 'Источник (зарплата...)' : 'Описание (кино, цирк...)';
 
     return AlertDialog(
-      titlePadding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      title: Text(
-        title,
-        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-      ),
+      title: Text(title),
       content: SizedBox(
         width: double.maxFinite,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Поле "Сумма"
             TextField(
               controller: _amountController,
-              decoration: InputDecoration(
-                hintText: '0',
-                hintStyle: const TextStyle(color: Colors.grey),
-                prefixIcon: const Icon(Icons.attach_money, size: 20, color: Colors.grey),
-                prefixIconConstraints: const BoxConstraints(minWidth: 40),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: Colors.grey, width: 0.8),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: Colors.blue, width: 1.2),
-                ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+              decoration: const InputDecoration(
+                labelText: 'Сумма',
+                hintText: '1000',
+                border: OutlineInputBorder(),
               ),
               keyboardType: TextInputType.numberWithOptions(decimal: true),
               textInputAction: TextInputAction.next,
-              textAlign: TextAlign.left,
             ),
             const SizedBox(height: 16),
-
-            // Поле "Описание / Источник"
             TextField(
               controller: _descriptionController,
-              focusNode: _descriptionFocusNode,
               decoration: InputDecoration(
-                hintText: _descriptionFocusNode.hasFocus ? detailedHint : descriptionHint,
-                hintStyle: const TextStyle(color: Colors.grey),
-                prefixIcon: const Icon(Icons.description, size: 20, color: Colors.grey),
-                prefixIconConstraints: const BoxConstraints(minWidth: 40),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: Colors.grey, width: 0.8),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: Colors.blue, width: 1.2),
-                ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                labelText: widget.isIncome ? 'Источник' : 'Описание',
+                hintText: hint,
+                border: const OutlineInputBorder(),
               ),
               keyboardType: TextInputType.text,
               textInputAction: TextInputAction.done,
             ),
-            const SizedBox(height: 20),
-
-            // Кнопка "Добавить"
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => _onSubmit(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: widget.isIncome ? Colors.green[600] : Colors.orange[800],
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: const Text('Добавить', style: TextStyle(fontWeight: FontWeight.w600)),
-              ),
-            ),
-            const SizedBox(height: 10),
-
-            // Кнопка "Отмена"
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => Navigator.of(context).pop(),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent, // прозрачный фон
-                  shadowColor: Colors.transparent,     // без тени
-                  elevation: 0,
-                  side: const BorderSide(color: Colors.grey, width: 2.0),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: const Text('Отмена', style: TextStyle(color: Colors.grey)),
-              ),
-            ),
           ],
         ),
       ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      backgroundColor: Colors.white,
-      elevation: 2,
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Отмена'),
+        ),
+        ElevatedButton(
+          onPressed: () => _onSubmit(context),
+          child: const Text('Добавить'),
+        ),
+      ],
     );
   }
 }
