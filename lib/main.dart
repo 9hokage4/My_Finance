@@ -8,8 +8,6 @@ import 'widgets/transaction_dialog.dart';
 
 import 'package:my_finance/database/app_database.dart';
 
-
-
 //  ГЛАВНАЯ СТРАНИЦА
 class HomePage extends StatefulWidget {
   final DateTime initialMonth;
@@ -37,7 +35,10 @@ class _HomePageState extends State<HomePage> {
       final date = DateTime.fromMillisecondsSinceEpoch(income.date);
       return date.year == month.year && date.month == month.month;
     });
-    final totalIncome = monthlyIncomes.fold(0.0, (sum, income) => sum + income.amount);
+    final totalIncome = monthlyIncomes.fold(
+      0.0,
+      (sum, income) => sum + income.amount,
+    );
 
     // Рассчитываем лимиты
     final limits = {
@@ -53,19 +54,15 @@ class _HomePageState extends State<HomePage> {
       return date.year == month.year && date.month == month.month;
     });
 
-    final spent = {
-      'Обязательные': 0.0,
-      'Развлечения': 0.0,
-      'Накопления': 0.0,
-    };
+    final spent = {'Обязательные': 0.0, 'Развлечения': 0.0, 'Накопления': 0.0};
 
     for (final expense in monthlyExpenses) {
-      spent[expense.category] = (spent[expense.category] ?? 0.0) + expense.amount;
+      spent[expense.category] =
+          (spent[expense.category] ?? 0.0) + expense.amount;
     }
 
     return BudgetData(spent: spent, limits: limits);
   }
-
 
   @override
   void initState() {
@@ -86,9 +83,9 @@ class _HomePageState extends State<HomePage> {
       lastDate: DateTime(2030),
       builder: (context, child) {
         return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(primary: Colors.blue),
-          ),
+          data: Theme.of(
+            context,
+          ).copyWith(colorScheme: ColorScheme.light(primary: Colors.blue)),
           child: child!,
         );
       },
@@ -145,7 +142,9 @@ class _HomePageState extends State<HomePage> {
                   SingleChildScrollView(
                     padding: const EdgeInsets.all(16.0),
                     child: ConstrainedBox(
-                      constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
+                      ),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -182,7 +181,8 @@ class _HomePageState extends State<HomePage> {
                           onTap: () async {
                             await showDialog(
                               context: context,
-                              builder: (ctx) => TransactionDialog(isIncome: true),
+                              builder: (ctx) =>
+                                  TransactionDialog(isIncome: true),
                             );
                             // После добавления — обновляем данные
                             setState(() {});
@@ -201,7 +201,11 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ],
                             ),
-                            child: const Icon(Icons.attach_money, color: Colors.white, size: 30),
+                            child: const Icon(
+                              Icons.attach_money,
+                              color: Colors.white,
+                              size: 30,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -209,7 +213,8 @@ class _HomePageState extends State<HomePage> {
                           onTap: () async {
                             await showDialog(
                               context: context,
-                              builder: (ctx) => TransactionDialog(isIncome: false),
+                              builder: (ctx) =>
+                                  TransactionDialog(isIncome: false),
                             );
                             setState(() {}); //  обновляем карточки
                           },
@@ -227,7 +232,11 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ],
                             ),
-                            child: const Icon(Icons.money_off, color: Colors.white, size: 30),
+                            child: const Icon(
+                              Icons.money_off,
+                              color: Colors.white,
+                              size: 30,
+                            ),
                           ),
                         ),
                       ],
@@ -259,18 +268,25 @@ class _HistoryPageState extends State<HistoryPage> {
     final incomes = await db.getIncomes();
     final expenses = await db.getExpenses();
 
-    final filteredIncomes = incomes.where((income) {
-      final date = DateTime.fromMillisecondsSinceEpoch(income.date);
-      return date.year == month.year && date.month == month.month;
-    }).map((i) => {'type': 'income', 'data': i});
+    final filteredIncomes = incomes
+        .where((income) {
+          final date = DateTime.fromMillisecondsSinceEpoch(income.date);
+          return date.year == month.year && date.month == month.month;
+        })
+        .map((i) => {'type': 'income', 'data': i});
 
-    final filteredExpenses = expenses.where((expense) {
-      final date = DateTime.fromMillisecondsSinceEpoch(expense.date);
-      return date.year == month.year && date.month == month.month;
-    }).map((e) => {'type': 'expense', 'data': e});
+    final filteredExpenses = expenses
+        .where((expense) {
+          final date = DateTime.fromMillisecondsSinceEpoch(expense.date);
+          return date.year == month.year && date.month == month.month;
+        })
+        .map((e) => {'type': 'expense', 'data': e});
 
     final all = <dynamic>[...filteredIncomes, ...filteredExpenses]
-      ..sort((a, b) => (b['data'] as dynamic).date.compareTo((a['data'] as dynamic).date));
+      ..sort(
+        (a, b) =>
+            (b['data'] as dynamic).date.compareTo((a['data'] as dynamic).date),
+      );
 
     return all;
   }
@@ -329,8 +345,8 @@ class _HistoryPageState extends State<HistoryPage> {
                       title: const Text('Подтверждение'),
                       content: Text(
                         isIncome
-                            ? 'Удалить доход "${description}"?'
-                            : 'Удалить расход "${description}"?',
+                            ? 'Удалить доход "$description"?'
+                            : 'Удалить расход "$description"?',
                       ),
                       actions: [
                         TextButton(
@@ -339,8 +355,13 @@ class _HistoryPageState extends State<HistoryPage> {
                         ),
                         ElevatedButton(
                           onPressed: () => Navigator.of(ctx).pop(true),
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                          child: const Text('Удалить', style: TextStyle(color: Colors.white)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                          ),
+                          child: const Text(
+                            'Удалить',
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ),
                       ],
                     ),
@@ -358,7 +379,9 @@ class _HistoryPageState extends State<HistoryPage> {
 
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(isIncome ? 'Доход удалён' : 'Расход удалён'),
+                        content: Text(
+                          isIncome ? 'Доход удалён' : 'Расход удалён',
+                        ),
                         backgroundColor: Colors.red,
                       ),
                     );
@@ -372,7 +395,7 @@ class _HistoryPageState extends State<HistoryPage> {
                     '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}',
                   ),
                   trailing: Text(
-                    (isIncome ? '+' : '-') + ' ${amount.toInt()}',
+                    '${isIncome ? '+' : '-'} ${amount.toInt()}',
                     style: TextStyle(
                       color: isIncome ? Colors.green : Colors.orange,
                       fontWeight: FontWeight.bold,
@@ -417,7 +440,10 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _selectedIndex == 0
-          ? HomePage(onMonthChanged: _onMonthChanged, initialMonth: _selectedMonth)
+          ? HomePage(
+              onMonthChanged: _onMonthChanged,
+              initialMonth: _selectedMonth,
+            )
           : HistoryPage(month: _selectedMonth),
       bottomNavigationBar: BottomNavigationBar(
         items: const [
